@@ -1,43 +1,34 @@
 package com.algaworks.algafood.api.controller;
 
-import java.util.List;
-
-import javax.validation.Valid;
-
-import com.algaworks.algafood.api.openapi.controller.PedidoControllerOpenApi;
-import com.algaworks.algafood.core.data.PageableTranslator;
-import com.algaworks.algafood.domain.filter.PedidoFilter;
-import com.algaworks.algafood.infrastructure.spec.PedidoSpecs;
-import com.google.common.collect.ImmutableMap;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.algaworks.algafood.api.assembler.PedidoInputDisassembler;
 import com.algaworks.algafood.api.assembler.PedidoModelAssembler;
 import com.algaworks.algafood.api.assembler.PedidoResumoModelAssembler;
 import com.algaworks.algafood.api.model.PedidoModel;
 import com.algaworks.algafood.api.model.PedidoResumoModel;
 import com.algaworks.algafood.api.model.input.PedidoInput;
+import com.algaworks.algafood.api.openapi.controller.PedidoControllerOpenApi;
+import com.algaworks.algafood.core.data.PageWrapper;
+import com.algaworks.algafood.core.data.PageableTranslator;
 import com.algaworks.algafood.domain.exception.EntidadeNaoEncontradaException;
 import com.algaworks.algafood.domain.exception.NegocioException;
+import com.algaworks.algafood.domain.filter.PedidoFilter;
 import com.algaworks.algafood.domain.model.Pedido;
 import com.algaworks.algafood.domain.model.Usuario;
 import com.algaworks.algafood.domain.repository.PedidoRepository;
 import com.algaworks.algafood.domain.service.EmissaoPedidoService;
+import com.algaworks.algafood.infrastructure.spec.PedidoSpecs;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
+import java.util.Map;
 
 @RestController
 @RequestMapping(value = "/pedidos", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -58,25 +49,24 @@ public class PedidoController implements PedidoControllerOpenApi {
 	@Autowired
 	private PedidoInputDisassembler pedidoInputDisassembler;
 
-	@ApiImplicitParams({
-			@ApiImplicitParam(value = "Nomes das propriedades para filtrar na resposta, serapados por vírgulo",
-					name = "campos", paramType = "query", type = "string")
-	})
+	@Autowired
+	private PagedResourcesAssembler<Pedido> pagedResourcesAssembler;
+
+	@Override
 	@GetMapping
-	public Page<PedidoResumoModel> pesquisar(PedidoFilter filtro,
-											 @PageableDefault(size = 10) Pageable pageable) {
-		pageable = traduzirPageable(pageable);
+	public PagedModel<PedidoResumoModel> pesquisar(PedidoFilter filtro,
+												   @PageableDefault(size = 10) Pageable pageable) {
+		Pageable pageableTraduzido = traduzirPageable(pageable);
 
 		Page<Pedido> pedidosPage = pedidoRepository.findAll(
-				PedidoSpecs.usandoFiltro(filtro), pageable);
+				PedidoSpecs.usandoFiltro(filtro), pageableTraduzido);
 
-		List<PedidoResumoModel> pedidosResumoModel = pedidoResumoModelAssembler
-				.toCollectionModel(pedidosPage.getContent());
+		pedidosPage = new PageWrapper<>(pedidosPage, pageable);
 
-		return new PageImpl<>(
-				pedidosResumoModel, pageable, pedidosPage.getTotalElements());
+		return pagedResourcesAssembler.toModel(pedidosPage, pedidoResumoModelAssembler);
 	}
-	
+
+	@Override
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
 	public PedidoModel adicionar(@Valid @RequestBody PedidoInput pedidoInput) {
@@ -95,10 +85,7 @@ public class PedidoController implements PedidoControllerOpenApi {
 		}
 	}
 
-	@ApiImplicitParams({
-			@ApiImplicitParam(value = "Nomes das propriedades para filtrar na resposta, serapados por vírgulo",
-					name = "campos", paramType = "query", type = "string")
-	})
+	@Override
 	@GetMapping("/{codigoPedido}")
 	public PedidoModel buscar(@PathVariable String codigoPedido) {
 		Pedido pedido = emissaoPedido.buscarOuFalhar(codigoPedido);
@@ -107,14 +94,19 @@ public class PedidoController implements PedidoControllerOpenApi {
 	}
 
 	private Pageable traduzirPageable(Pageable apiPageable) {
-		var mapamento = ImmutableMap.of(
+		var mapeamento = Map.of(
 				"codigo", "codigo",
-				"restaurante.nome", "restaurante.nome",
-				"nomeCliente", "cliente.nome",
-				"valorTotal", "valorTotal"
+				"subtotal", "subtotal",
+				"taxaFrete", "taxaFrete",
+				"valorTotal", "valorTotal",
+				"dataCriacao", "dataCriacao",
+				"nomerestaurante", "restaurante.nome",
+				"restaurante.id", "restaurante.id",
+				"cliente.id", "cliente.id",
+				"cliente.nome", "cliente.nome"
 		);
 
-		return PageableTranslator.translate(apiPageable, mapamento);
+		return PageableTranslator.translate(apiPageable, mapeamento);
 	}
 	
 }
