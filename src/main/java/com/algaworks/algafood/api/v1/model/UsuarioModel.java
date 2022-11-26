@@ -11,13 +11,13 @@ import org.springframework.hateoas.server.core.Relation;
 @Getter
 public class UsuarioModel extends RepresentationModel<UsuarioModel> {
 
-	@ApiModelProperty(example = "1")
-	private Long id;
+    @ApiModelProperty(example = "1")
+    private Long id;
 
-	@ApiModelProperty(example = "João da Silva")
-	private String nome;
+    @ApiModelProperty(example = "João da Silva")
+    private String nome;
 
-	@ApiModelProperty(example = "joao.ger@algafood.com.br")
-	private String email;
-	
+    @ApiModelProperty(example = "joao.ger@algafood.com.br")
+    private String email;
+
 }

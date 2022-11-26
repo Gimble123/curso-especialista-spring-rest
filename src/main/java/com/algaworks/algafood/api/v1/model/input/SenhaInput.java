@@ -10,11 +10,11 @@ import lombok.Setter;
 @Getter
 public class SenhaInput {
 
-	@ApiModelProperty(example = "123", required = true)
-	@NotBlank
-	private String senhaAtual;
+    @ApiModelProperty(example = "123", required = true)
+    @NotBlank
+    private String senhaAtual;
 
-	@ApiModelProperty(example = "123", required = true)
-	@NotBlank
-	private String novaSenha;
+    @ApiModelProperty(example = "123", required = true)
+    @NotBlank
+    private String novaSenha;
 }

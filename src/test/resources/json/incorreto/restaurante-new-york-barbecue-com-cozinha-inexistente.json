@@ -1,7 +1,7 @@
 {
-	"nome": "New York Barbecue",
-	"taxaFrete": 12,
-	"cozinha": {
-		"id": 200
-	}
+  "nome": "New York Barbecue",
+  "taxaFrete": 12,
+  "cozinha": {
+    "id": 200
+  }
 }

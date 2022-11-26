@@ -1,6 +1,7 @@
 package com.algaworks.algafood.api.v1.controller;
 
 import com.algaworks.algafood.api.v1.openapi.controller.FluxoPedidoControllerOpenApi;
+import com.algaworks.algafood.core.security.CheckSecurity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -17,31 +18,34 @@ import com.algaworks.algafood.domain.service.FluxoPedidoService;
 @RequestMapping(path = "/v1/pedidos/{codigoPedido}", produces = MediaType.APPLICATION_JSON_VALUE)
 public class FluxoPedidoController implements FluxoPedidoControllerOpenApi {
 
-	@Autowired
-	private FluxoPedidoService fluxoPedido;
-	
-	@PutMapping("/confirmacao")
-	@ResponseStatus(HttpStatus.NO_CONTENT)
-	public ResponseEntity<Void> confirmar(@PathVariable String codigoPedido) {
-		fluxoPedido.confirmar(codigoPedido);
+    @Autowired
+    private FluxoPedidoService fluxoPedido;
 
-		return ResponseEntity.noContent().build();
-	}
-	
-	@PutMapping("/cancelamento")
-	@ResponseStatus(HttpStatus.NO_CONTENT)
-	public ResponseEntity<Void> cancelar(@PathVariable String codigoPedido) {
-		fluxoPedido.cancelar(codigoPedido);
+    @CheckSecurity.Pedidos.PodeGerenciarPedidos
+    @PutMapping("/confirmacao")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public ResponseEntity<Void> confirmar(@PathVariable String codigoPedido) {
+        fluxoPedido.confirmar(codigoPedido);
 
-		return ResponseEntity.noContent().build();
-	}
-	
-	@PutMapping("/entrega")
-	@ResponseStatus(HttpStatus.NO_CONTENT)
-	public ResponseEntity<Void> entregar(@PathVariable String codigoPedido) {
-		fluxoPedido.entregar(codigoPedido);
+        return ResponseEntity.noContent().build();
+    }
 
-		return ResponseEntity.noContent().build();
-	}
-	
+    @CheckSecurity.Pedidos.PodeGerenciarPedidos
+    @PutMapping("/cancelamento")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public ResponseEntity<Void> cancelar(@PathVariable String codigoPedido) {
+        fluxoPedido.cancelar(codigoPedido);
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @CheckSecurity.Pedidos.PodeGerenciarPedidos
+    @PutMapping("/entrega")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public ResponseEntity<Void> entregar(@PathVariable String codigoPedido) {
+        fluxoPedido.entregar(codigoPedido);
+
+        return ResponseEntity.noContent().build();
+    }
+
 }

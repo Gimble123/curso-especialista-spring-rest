@@ -11,16 +11,16 @@ import lombok.Setter;
 @Getter
 public class ItemPedidoInput {
 
-	@ApiModelProperty(example = "1", required = true)
-	@NotNull
-	private Long produtoId;
+    @ApiModelProperty(example = "1", required = true)
+    @NotNull
+    private Long produtoId;
 
-	@ApiModelProperty(example = "2", required = true)
-	@NotNull
-	@PositiveOrZero
-	private Integer quantidade;
+    @ApiModelProperty(example = "2", required = true)
+    @NotNull
+    @PositiveOrZero
+    private Integer quantidade;
 
-	@ApiModelProperty(example = "Menos picante, por favor")
-	private String observacao;
-	
+    @ApiModelProperty(example = "Menos picante, por favor")
+    private String observacao;
+
 }

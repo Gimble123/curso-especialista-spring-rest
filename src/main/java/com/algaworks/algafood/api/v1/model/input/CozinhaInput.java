@@ -10,8 +10,8 @@ import lombok.Setter;
 @Getter
 public class CozinhaInput {
 
-	@ApiModelProperty(example = "Brasileira", required = true)
-	@NotBlank
-	private String nome;
-	
+    @ApiModelProperty(example = "Brasileira", required = true)
+    @NotBlank
+    private String nome;
+
 }

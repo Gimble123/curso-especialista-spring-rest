@@ -11,10 +11,10 @@ import org.springframework.hateoas.server.core.Relation;
 @Getter
 public class RestauranteResumoModel extends RepresentationModel<RestauranteResumoModel> {
 
-	@ApiModelProperty(example = "1")
-	private Long id;
+    @ApiModelProperty(example = "1")
+    private Long id;
 
-	@ApiModelProperty(example = "Thai Gourmet")
-	private String nome;
-	
+    @ApiModelProperty(example = "Thai Gourmet")
+    private String nome;
+
 }

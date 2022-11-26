@@ -10,8 +10,8 @@ import lombok.Setter;
 @Getter
 public class CozinhaIdInput {
 
-	@ApiModelProperty(example = "1", required = true)
-	@NotNull
-	private Long id;
-	
+    @ApiModelProperty(example = "1", required = true)
+    @NotNull
+    private Long id;
+
 }

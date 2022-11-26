@@ -10,15 +10,15 @@ import com.algaworks.algafood.domain.model.FormaPagamento;
 @Component
 public class FormaPagamentoInputDisassembler {
 
-	@Autowired
-	private ModelMapper modelMapper;
-	
-	public FormaPagamento toDomainObject(FormaPagamentoInput formaPagamentoInput) {
-		return modelMapper.map(formaPagamentoInput, FormaPagamento.class);
-	}
-	
-	public void copyToDomainObject(FormaPagamentoInput formaPagamentoInput, FormaPagamento formaPagamento) {
-		modelMapper.map(formaPagamentoInput, formaPagamento);
-	}
-	
+    @Autowired
+    private ModelMapper modelMapper;
+
+    public FormaPagamento toDomainObject(FormaPagamentoInput formaPagamentoInput) {
+        return modelMapper.map(formaPagamentoInput, FormaPagamento.class);
+    }
+
+    public void copyToDomainObject(FormaPagamentoInput formaPagamentoInput, FormaPagamento formaPagamento) {
+        modelMapper.map(formaPagamentoInput, formaPagamento);
+    }
+
 }

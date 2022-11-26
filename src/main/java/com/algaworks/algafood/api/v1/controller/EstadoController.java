@@ -5,6 +5,7 @@ import java.util.List;
 import javax.validation.Valid;
 
 import com.algaworks.algafood.api.v1.openapi.controller.EstadoControllerOpenApi;
+import com.algaworks.algafood.core.security.CheckSecurity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.http.HttpStatus;
@@ -31,58 +32,68 @@ import com.algaworks.algafood.domain.service.CadastroEstadoService;
 @RequestMapping(path = "/v1/estados", produces = MediaType.APPLICATION_JSON_VALUE)
 public class EstadoController implements EstadoControllerOpenApi {
 
-	@Autowired
-	private EstadoRepository estadoRepository;
-	
-	@Autowired
-	private CadastroEstadoService cadastroEstado;
-	
-	@Autowired
-	private EstadoModelAssembler estadoModelAssembler;
-	
-	@Autowired
-	private EstadoInputDisassembler estadoInputDisassembler;
-	
-	@GetMapping
-	public CollectionModel<EstadoModel> listar() {
-		List<Estado> todosEstados = estadoRepository.findAll();
-		
-		return estadoModelAssembler.toCollectionModel(todosEstados);
-	}
-	
-	@GetMapping("/{estadoId}")
-	public EstadoModel buscar(@PathVariable Long estadoId) {
-		Estado estado = cadastroEstado.buscarOuFalhar(estadoId);
-		
-		return estadoModelAssembler.toModel(estado);
-	}
-	
-	@PostMapping
-	@ResponseStatus(HttpStatus.CREATED)
-	public EstadoModel adicionar(@RequestBody @Valid EstadoInput estadoInput) {
-		Estado estado = estadoInputDisassembler.toDomainObject(estadoInput);
-		
-		estado = cadastroEstado.salvar(estado);
-		
-		return estadoModelAssembler.toModel(estado);
-	}
-	
-	@PutMapping("/{estadoId}")
-	public EstadoModel atualizar(@PathVariable Long estadoId,
-			@RequestBody @Valid EstadoInput estadoInput) {
-		Estado estadoAtual = cadastroEstado.buscarOuFalhar(estadoId);
-		
-		estadoInputDisassembler.copyToDomainObject(estadoInput, estadoAtual);
-		
-		estadoAtual = cadastroEstado.salvar(estadoAtual);
-		
-		return estadoModelAssembler.toModel(estadoAtual);
-	}
-	
-	@DeleteMapping("/{estadoId}")
-	@ResponseStatus(HttpStatus.NO_CONTENT)
-	public void remover(@PathVariable Long estadoId) {
-		cadastroEstado.excluir(estadoId);	
-	}
-	
+    @Autowired
+    private EstadoRepository estadoRepository;
+
+    @Autowired
+    private CadastroEstadoService cadastroEstado;
+
+    @Autowired
+    private EstadoModelAssembler estadoModelAssembler;
+
+    @Autowired
+    private EstadoInputDisassembler estadoInputDisassembler;
+
+    @CheckSecurity.Estados.PodeConsultar
+    @Override
+    @GetMapping
+    public CollectionModel<EstadoModel> listar() {
+        List<Estado> todosEstados = estadoRepository.findAll();
+
+        return estadoModelAssembler.toCollectionModel(todosEstados);
+    }
+
+    @CheckSecurity.Estados.PodeConsultar
+    @Override
+    @GetMapping("/{estadoId}")
+    public EstadoModel buscar(@PathVariable Long estadoId) {
+        Estado estado = cadastroEstado.buscarOuFalhar(estadoId);
+
+        return estadoModelAssembler.toModel(estado);
+    }
+
+    @CheckSecurity.Estados.PodeEditar
+    @Override
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public EstadoModel adicionar(@RequestBody @Valid EstadoInput estadoInput) {
+        Estado estado = estadoInputDisassembler.toDomainObject(estadoInput);
+
+        estado = cadastroEstado.salvar(estado);
+
+        return estadoModelAssembler.toModel(estado);
+    }
+
+    @CheckSecurity.Estados.PodeEditar
+    @Override
+    @PutMapping("/{estadoId}")
+    public EstadoModel atualizar(@PathVariable Long estadoId,
+                                 @RequestBody @Valid EstadoInput estadoInput) {
+        Estado estadoAtual = cadastroEstado.buscarOuFalhar(estadoId);
+
+        estadoInputDisassembler.copyToDomainObject(estadoInput, estadoAtual);
+
+        estadoAtual = cadastroEstado.salvar(estadoAtual);
+
+        return estadoModelAssembler.toModel(estadoAtual);
+    }
+
+    @CheckSecurity.Estados.PodeEditar
+    @Override
+    @DeleteMapping("/{estadoId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void remover(@PathVariable Long estadoId) {
+        cadastroEstado.excluir(estadoId);
+    }
+
 }

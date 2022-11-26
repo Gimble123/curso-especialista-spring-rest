@@ -28,8 +28,8 @@ public interface RestauranteProdutoFotoControllerOpenApi {
             FotoProdutoInput fotoProdutoInput,
 
             @ApiParam(value = "Arquivo da foto do produto (máximo 500KB, apenas JPG e PNG)",
-                required = true)
-            MultipartFile arquivo) throws IOException;
+                    required = true)
+                    MultipartFile arquivo) throws IOException;
 
     @ApiOperation("Exclui a foto do produto de um restaurante")
     @ApiResponses({

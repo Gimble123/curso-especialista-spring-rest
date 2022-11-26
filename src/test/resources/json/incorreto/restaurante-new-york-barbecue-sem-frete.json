@@ -1,6 +1,6 @@
 {
-	"nome": "New York Barbecue",
-	"cozinha": {
-		"id": 2
-	}
+  "nome": "New York Barbecue",
+  "cozinha": {
+    "id": 2
+  }
 }

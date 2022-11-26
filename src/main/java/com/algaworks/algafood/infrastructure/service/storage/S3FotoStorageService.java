@@ -51,7 +51,7 @@ public class S3FotoStorageService implements FotoStorageService {
                     caminhoArquivo,
                     byteArrayInputStream,
                     objectMetadata)
-                .withCannedAcl(CannedAccessControlList.PublicRead);
+                    .withCannedAcl(CannedAccessControlList.PublicRead);
 
             amazonS3.putObject(putObjectRequest);
         } catch (Exception e) {

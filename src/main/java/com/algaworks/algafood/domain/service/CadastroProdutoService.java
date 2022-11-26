@@ -11,17 +11,17 @@ import com.algaworks.algafood.domain.repository.ProdutoRepository;
 @Service
 public class CadastroProdutoService {
 
-	@Autowired
-	private ProdutoRepository produtoRepository;
-	
-	@Transactional
-	public Produto salvar(Produto produto) {
-		return produtoRepository.save(produto);
-	}
-	
-	public Produto buscarOuFalhar(Long restauranteId, Long produtoId) {
-		return produtoRepository.findById(restauranteId, produtoId)
-			.orElseThrow(() -> new ProdutoNaoEncontradoException(restauranteId, produtoId));
-	}
-	
+    @Autowired
+    private ProdutoRepository produtoRepository;
+
+    @Transactional
+    public Produto salvar(Produto produto) {
+        return produtoRepository.save(produto);
+    }
+
+    public Produto buscarOuFalhar(Long restauranteId, Long produtoId) {
+        return produtoRepository.findById(restauranteId, produtoId)
+                .orElseThrow(() -> new ProdutoNaoEncontradoException(restauranteId, produtoId));
+    }
+
 }

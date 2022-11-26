@@ -7,5 +7,5 @@ public interface RestauranteView {
 //
 //	public interface ApenasNome {
 //	}
-	
+
 }

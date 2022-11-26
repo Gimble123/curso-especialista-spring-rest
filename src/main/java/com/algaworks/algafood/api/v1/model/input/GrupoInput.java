@@ -10,8 +10,8 @@ import javax.validation.constraints.NotBlank;
 @Getter
 public class GrupoInput {
 
-	@ApiModelProperty(example = "Gerente", required = true)
-	@NotBlank
-	private String nome;
-	
+    @ApiModelProperty(example = "Gerente", required = true)
+    @NotBlank
+    private String nome;
+
 }

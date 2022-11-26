@@ -10,12 +10,12 @@ import com.algaworks.algafood.domain.repository.PermissaoRepository;
 @Service
 public class CadastroPermissaoService {
 
-	@Autowired
-	private PermissaoRepository permissaoRepository;
-	
-	public Permissao buscarOuFalhar(Long permissaoId) {
-		return permissaoRepository.findById(permissaoId)
-			.orElseThrow(() -> new PermissaoNaoEncontradaException(permissaoId));
-	}
-	
+    @Autowired
+    private PermissaoRepository permissaoRepository;
+
+    public Permissao buscarOuFalhar(Long permissaoId) {
+        return permissaoRepository.findById(permissaoId)
+                .orElseThrow(() -> new PermissaoNaoEncontradaException(permissaoId));
+    }
+
 }

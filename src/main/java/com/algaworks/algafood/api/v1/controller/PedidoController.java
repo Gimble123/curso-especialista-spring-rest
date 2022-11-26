@@ -9,6 +9,8 @@ import com.algaworks.algafood.api.v1.model.input.PedidoInput;
 import com.algaworks.algafood.api.v1.openapi.controller.PedidoControllerOpenApi;
 import com.algaworks.algafood.core.data.PageWrapper;
 import com.algaworks.algafood.core.data.PageableTranslator;
+import com.algaworks.algafood.core.security.AlgaSecurity;
+import com.algaworks.algafood.core.security.CheckSecurity;
 import com.algaworks.algafood.domain.exception.EntidadeNaoEncontradaException;
 import com.algaworks.algafood.domain.exception.NegocioException;
 import com.algaworks.algafood.domain.filter.PedidoFilter;
@@ -34,79 +36,84 @@ import java.util.Map;
 @RequestMapping(value = "/v1/pedidos", produces = MediaType.APPLICATION_JSON_VALUE)
 public class PedidoController implements PedidoControllerOpenApi {
 
-	@Autowired
-	private PedidoRepository pedidoRepository;
-	
-	@Autowired
-	private EmissaoPedidoService emissaoPedido;
-	
-	@Autowired
-	private PedidoModelAssembler pedidoModelAssembler;
-	
-	@Autowired
-	private PedidoResumoModelAssembler pedidoResumoModelAssembler;
-	
-	@Autowired
-	private PedidoInputDisassembler pedidoInputDisassembler;
+    @Autowired
+    private PedidoRepository pedidoRepository;
 
-	@Autowired
-	private PagedResourcesAssembler<Pedido> pagedResourcesAssembler;
+    @Autowired
+    private EmissaoPedidoService emissaoPedido;
 
-	@Override
-	@GetMapping
-	public PagedModel<PedidoResumoModel> pesquisar(PedidoFilter filtro,
-												   @PageableDefault(size = 10) Pageable pageable) {
-		Pageable pageableTraduzido = traduzirPageable(pageable);
+    @Autowired
+    private PedidoModelAssembler pedidoModelAssembler;
 
-		Page<Pedido> pedidosPage = pedidoRepository.findAll(
-				PedidoSpecs.usandoFiltro(filtro), pageableTraduzido);
+    @Autowired
+    private PedidoResumoModelAssembler pedidoResumoModelAssembler;
 
-		pedidosPage = new PageWrapper<>(pedidosPage, pageable);
+    @Autowired
+    private PedidoInputDisassembler pedidoInputDisassembler;
 
-		return pagedResourcesAssembler.toModel(pedidosPage, pedidoResumoModelAssembler);
-	}
+    @Autowired
+    private PagedResourcesAssembler<Pedido> pagedResourcesAssembler;
 
-	@Override
-	@PostMapping
-	@ResponseStatus(HttpStatus.CREATED)
-	public PedidoModel adicionar(@Valid @RequestBody PedidoInput pedidoInput) {
-		try {
-			Pedido novoPedido = pedidoInputDisassembler.toDomainObject(pedidoInput);
+    @Autowired
+    private AlgaSecurity algaSecurity;
 
-			// TODO pegar usuário autenticado
-			novoPedido.setCliente(new Usuario());
-			novoPedido.getCliente().setId(1L);
+    @CheckSecurity.Pedidos.PodePesquisar
+    @Override
+    @GetMapping
+    public PagedModel<PedidoResumoModel> pesquisar(PedidoFilter filtro,
+                                                   @PageableDefault(size = 10) Pageable pageable) {
+        Pageable pageableTraduzido = traduzirPageable(pageable);
 
-			novoPedido = emissaoPedido.emitir(novoPedido);
+        Page<Pedido> pedidosPage = pedidoRepository.findAll(
+                PedidoSpecs.usandoFiltro(filtro), pageableTraduzido);
 
-			return pedidoModelAssembler.toModel(novoPedido);
-		} catch (EntidadeNaoEncontradaException e) {
-			throw new NegocioException(e.getMessage(), e);
-		}
-	}
+        pedidosPage = new PageWrapper<>(pedidosPage, pageable);
 
-	@Override
-	@GetMapping("/{codigoPedido}")
-	public PedidoModel buscar(@PathVariable String codigoPedido) {
-		Pedido pedido = emissaoPedido.buscarOuFalhar(codigoPedido);
-		
-		return pedidoModelAssembler.toModel(pedido);
-	}
+        return pagedResourcesAssembler.toModel(pedidosPage, pedidoResumoModelAssembler);
+    }
 
-	private Pageable traduzirPageable(Pageable apiPageable) {
-		var mapeamento = Map.of(
-				"codigo", "codigo",
-				"subtotal", "subtotal",
-				"taxaFrete", "taxaFrete",
-				"valorTotal", "valorTotal",
-				"dataCriacao", "dataCriacao",
-				"nomerestaurante", "restaurante.nome",
-				"restaurante.id", "restaurante.id",
-				"cliente.id", "cliente.id",
-				"cliente.nome", "cliente.nome"
-		);
+    @CheckSecurity.Pedidos.PodeCriar
+    @Override
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public PedidoModel adicionar(@Valid @RequestBody PedidoInput pedidoInput) {
+        try {
+            Pedido novoPedido = pedidoInputDisassembler.toDomainObject(pedidoInput);
 
-		return PageableTranslator.translate(apiPageable, mapeamento);
-	}
-	
+            novoPedido.setCliente(new Usuario());
+            novoPedido.getCliente().setId(algaSecurity.getUsuarioId());
+
+            novoPedido = emissaoPedido.emitir(novoPedido);
+
+            return pedidoModelAssembler.toModel(novoPedido);
+        } catch (EntidadeNaoEncontradaException e) {
+            throw new NegocioException(e.getMessage(), e);
+        }
+    }
+
+    @CheckSecurity.Pedidos.PodeBuscar
+    @Override
+    @GetMapping("/{codigoPedido}")
+    public PedidoModel buscar(@PathVariable String codigoPedido) {
+        Pedido pedido = emissaoPedido.buscarOuFalhar(codigoPedido);
+
+        return pedidoModelAssembler.toModel(pedido);
+    }
+
+    private Pageable traduzirPageable(Pageable apiPageable) {
+        var mapeamento = Map.of(
+                "codigo", "codigo",
+                "subtotal", "subtotal",
+                "taxaFrete", "taxaFrete",
+                "valorTotal", "valorTotal",
+                "dataCriacao", "dataCriacao",
+                "nomerestaurante", "restaurante.nome",
+                "restaurante.id", "restaurante.id",
+                "cliente.id", "cliente.id",
+                "cliente.nome", "cliente.nome"
+        );
+
+        return PageableTranslator.translate(apiPageable, mapeamento);
+    }
+
 }

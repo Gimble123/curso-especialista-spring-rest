@@ -33,7 +33,7 @@ public class VendaQueryServiceImpl implements VendaQueryService {
                 root.get("dataCriacao"),
                 builder.literal("+00:00"),
                 builder.literal(timeOffset)
-                );
+        );
 
         var functionDateDataCriacao = builder.function(
                 "date", Date.class, functionConvertTzDataCriacao);

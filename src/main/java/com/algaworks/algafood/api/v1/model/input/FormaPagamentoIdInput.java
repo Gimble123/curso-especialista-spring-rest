@@ -9,7 +9,7 @@ import lombok.Setter;
 @Getter
 public class FormaPagamentoIdInput {
 
-	@NotNull
-	private Long id;
-	
+    @NotNull
+    private Long id;
+
 }

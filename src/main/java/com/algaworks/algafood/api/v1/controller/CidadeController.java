@@ -6,6 +6,7 @@ import com.algaworks.algafood.api.v1.assembler.CidadeModelAssembler;
 import com.algaworks.algafood.api.v1.model.CidadeModel;
 import com.algaworks.algafood.api.v1.model.input.CidadeInput;
 import com.algaworks.algafood.api.v1.openapi.controller.CidadeControllerOpenApi;
+import com.algaworks.algafood.core.security.CheckSecurity;
 import com.algaworks.algafood.domain.exception.EstadoNaoEncontradoException;
 import com.algaworks.algafood.domain.exception.NegocioException;
 import com.algaworks.algafood.domain.model.Cidade;
@@ -25,69 +26,79 @@ import java.util.List;
 @RequestMapping(value = "/v1/cidades", produces = MediaType.APPLICATION_JSON_VALUE)
 public class CidadeController implements CidadeControllerOpenApi {
 
-	@Autowired
-	private CidadeRepository cidadeRepository;
-	
-	@Autowired
-	private CadastroCidadeService cadastroCidade;
-	
-	@Autowired
-	private CidadeModelAssembler cidadeModelAssembler;
-	
-	@Autowired
-	private CidadeInputDisassembler cidadeInputDisassembler;
+    @Autowired
+    private CidadeRepository cidadeRepository;
 
-	@GetMapping
-	public CollectionModel<CidadeModel> listar() {
-		List<Cidade> todasCidades = cidadeRepository.findAll();
+    @Autowired
+    private CadastroCidadeService cadastroCidade;
 
-		return cidadeModelAssembler.toCollectionModel(todasCidades);
-	}
+    @Autowired
+    private CidadeModelAssembler cidadeModelAssembler;
 
-	@GetMapping("/{cidadeId}")
-	public CidadeModel buscar(@PathVariable Long cidadeId) {
-		Cidade cidade = cadastroCidade.buscarOuFalhar(cidadeId);
+    @Autowired
+    private CidadeInputDisassembler cidadeInputDisassembler;
 
-		return cidadeModelAssembler.toModel(cidade);
-	}
+    @CheckSecurity.Cidades.PodeConsultar
+    @Override
+    @GetMapping
+    public CollectionModel<CidadeModel> listar() {
+        List<Cidade> todasCidades = cidadeRepository.findAll();
 
-	@PostMapping
-	@ResponseStatus(HttpStatus.CREATED)
-	public CidadeModel adicionar(@RequestBody @Valid CidadeInput cidadeInput) {
-		try {
-			Cidade cidade = cidadeInputDisassembler.toDomainObject(cidadeInput);
-			
-			cidade = cadastroCidade.salvar(cidade);
+        return cidadeModelAssembler.toCollectionModel(todasCidades);
+    }
 
-			CidadeModel cidadeModel = cidadeModelAssembler.toModel(cidade);
+    @CheckSecurity.Cidades.PodeConsultar
+    @Override
+    @GetMapping("/{cidadeId}")
+    public CidadeModel buscar(@PathVariable Long cidadeId) {
+        Cidade cidade = cadastroCidade.buscarOuFalhar(cidadeId);
 
-			ResourceUriHelper.addUriInResponseHeader(cidadeModel.getId());
+        return cidadeModelAssembler.toModel(cidade);
+    }
 
-			return cidadeModel;
-		} catch (EstadoNaoEncontradoException e) {
-			throw new NegocioException(e.getMessage(), e);
-		}
-	}
+    @CheckSecurity.Cidades.PodeEditar
+    @Override
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public CidadeModel adicionar(@RequestBody @Valid CidadeInput cidadeInput) {
+        try {
+            Cidade cidade = cidadeInputDisassembler.toDomainObject(cidadeInput);
 
-	@PutMapping("/{cidadeId}")
-	public CidadeModel atualizar(@PathVariable Long cidadeId, @RequestBody @Valid CidadeInput cidadeInput) {
-		try {
-			Cidade cidadeAtual = cadastroCidade.buscarOuFalhar(cidadeId);
-			
-			cidadeInputDisassembler.copyToDomainObject(cidadeInput, cidadeAtual);
-			
-			cidadeAtual = cadastroCidade.salvar(cidadeAtual);
-			
-			return cidadeModelAssembler.toModel(cidadeAtual);
-		} catch (EstadoNaoEncontradoException e) {
-			throw new NegocioException(e.getMessage(), e);
-		}
-	}
+            cidade = cadastroCidade.salvar(cidade);
 
-	@DeleteMapping("/{cidadeId}")
-	@ResponseStatus(HttpStatus.NO_CONTENT)
-	public void remover(@PathVariable Long cidadeId) {
-		cadastroCidade.excluir(cidadeId);	
-	}
-	
+            CidadeModel cidadeModel = cidadeModelAssembler.toModel(cidade);
+
+            ResourceUriHelper.addUriInResponseHeader(cidadeModel.getId());
+
+            return cidadeModel;
+        } catch (EstadoNaoEncontradoException e) {
+            throw new NegocioException(e.getMessage(), e);
+        }
+    }
+
+    @CheckSecurity.Cidades.PodeEditar
+    @Override
+    @PutMapping("/{cidadeId}")
+    public CidadeModel atualizar(@PathVariable Long cidadeId, @RequestBody @Valid CidadeInput cidadeInput) {
+        try {
+            Cidade cidadeAtual = cadastroCidade.buscarOuFalhar(cidadeId);
+
+            cidadeInputDisassembler.copyToDomainObject(cidadeInput, cidadeAtual);
+
+            cidadeAtual = cadastroCidade.salvar(cidadeAtual);
+
+            return cidadeModelAssembler.toModel(cidadeAtual);
+        } catch (EstadoNaoEncontradoException e) {
+            throw new NegocioException(e.getMessage(), e);
+        }
+    }
+
+    @CheckSecurity.Cidades.PodeEditar
+    @Override
+    @DeleteMapping("/{cidadeId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void remover(@PathVariable Long cidadeId) {
+        cadastroCidade.excluir(cidadeId);
+    }
+
 }

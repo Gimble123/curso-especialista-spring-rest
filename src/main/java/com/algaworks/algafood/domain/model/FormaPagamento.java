@@ -17,15 +17,15 @@ import java.time.OffsetDateTime;
 @Entity
 public class FormaPagamento {
 
-	@EqualsAndHashCode.Include
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
-	
-	@Column(nullable = false)
-	private String descricao;
+    @EqualsAndHashCode.Include
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-	@UpdateTimestamp
-	private OffsetDateTime dataAtualizacao;
-	
+    @Column(nullable = false)
+    private String descricao;
+
+    @UpdateTimestamp
+    private OffsetDateTime dataAtualizacao;
+
 }

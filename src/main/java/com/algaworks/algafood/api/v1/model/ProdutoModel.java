@@ -13,19 +13,19 @@ import org.springframework.hateoas.server.core.Relation;
 @Getter
 public class ProdutoModel extends RepresentationModel<ProdutoModel> {
 
-	@ApiModelProperty(example = "1")
-	private Long id;
+    @ApiModelProperty(example = "1")
+    private Long id;
 
-	@ApiModelProperty(example = "Espetinho de Cupim")
-	private String nome;
+    @ApiModelProperty(example = "Espetinho de Cupim")
+    private String nome;
 
-	@ApiModelProperty(example = "Acompanha farinha, mandioca e vinagrete")
-	private String descricao;
+    @ApiModelProperty(example = "Acompanha farinha, mandioca e vinagrete")
+    private String descricao;
 
-	@ApiModelProperty(example = "12.50")
-	private BigDecimal preco;
+    @ApiModelProperty(example = "12.50")
+    private BigDecimal preco;
 
-	@ApiModelProperty(example = "true")
-	private Boolean ativo;
-	
+    @ApiModelProperty(example = "true")
+    private Boolean ativo;
+
 }
