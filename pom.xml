@@ -23,8 +23,7 @@
         <aws-java-sdk-s3.version>1.11.671</aws-java-sdk-s3.version>
         <spring-fox.version>2.9.2</spring-fox.version>
         <logback-ext-loggly.version>0.1.5</logback-ext-loggly.version>
-        <spring-security-oauth2.version>2.3.7.RELEASE</spring-security-oauth2.version>
-        <spring-security-jwt.version>1.0.11.RELEASE</spring-security-jwt.version>
+        <springauthserver.version>0.3.1</springauthserver.version>
     </properties>
 
     <dependencies>
@@ -148,6 +147,11 @@
             <version>${logback-ext-loggly.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-oauth2-authorization-server</artifactId>
+            <version>${springauthserver.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
@@ -160,12 +164,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.springframework.security.oauth</groupId>
-            <artifactId>spring-security-oauth2</artifactId>
-            <version>${spring-security-oauth2.version}</version>
-        </dependency>
-
         <dependency>
             <groupId>javax.xml.bind</groupId>
             <artifactId>jaxb-api</artifactId>
@@ -183,11 +181,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-jwt</artifactId>
-            <version>${spring-security-jwt.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

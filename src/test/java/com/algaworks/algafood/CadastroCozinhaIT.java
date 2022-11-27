@@ -122,6 +122,7 @@ public class CadastroCozinhaIT {
                 .statusCode(HttpStatus.CREATED.value());
     }
 
+
     @Test
     @WithMockUser(
             username="joao.ger@algafood.com.br",

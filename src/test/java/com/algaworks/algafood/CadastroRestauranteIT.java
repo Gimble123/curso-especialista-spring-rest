@@ -5,6 +5,11 @@ import static org.hamcrest.Matchers.equalTo;
 
 import java.math.BigDecimal;
 
+import io.restassured.http.Method;
+import io.restassured.response.Response;
+import io.restassured.specification.RequestSpecification;
+import net.minidev.json.JSONObject;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -12,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -59,7 +65,7 @@ public class CadastroRestauranteIT {
     public void setUp() {
         RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
         RestAssured.port = port;
-        RestAssured.basePath = "/restaurantes";
+        RestAssured.basePath = "/v1/restaurantes";
 
         jsonRestauranteCorreto = ResourceUtils.getContentFromResource(
                 "/json/correto/restaurante-new-york-barbecue.json");
@@ -86,6 +92,25 @@ public class CadastroRestauranteIT {
                 .then()
                 .statusCode(HttpStatus.OK.value());
     }
+
+    @Test
+    @WithMockUser(
+            username="joao.ger@algafood.com.br",
+            authorities = {
+                    "SCOPE_READ",
+                    "SCOPE_WRITE",
+                    "EDITAR_COZINHAS"
+            }
+    )
+    public void deveRetornarStatus204_QuandoDeletarRestaurante() {
+        given()
+                .accept(ContentType.JSON)
+                .when()
+                .delete()
+                .then()
+                .statusCode(HttpStatus.NO_CONTENT.value());
+    }
+
 
     @Test
     public void deveRetornarStatus201_QuandoCadastrarRestaurante() {
@@ -173,12 +198,14 @@ public class CadastroRestauranteIT {
         burgerTopRestaurante = new Restaurante();
         burgerTopRestaurante.setNome("Burger Top");
         burgerTopRestaurante.setTaxaFrete(new BigDecimal(10));
+        burgerTopRestaurante.setAtivo(true);
         burgerTopRestaurante.setCozinha(cozinhaAmericana);
         restauranteRepository.save(burgerTopRestaurante);
 
         Restaurante comidaMineiraRestaurante = new Restaurante();
         comidaMineiraRestaurante.setNome("Comida Mineira");
         comidaMineiraRestaurante.setTaxaFrete(new BigDecimal(10));
+        comidaMineiraRestaurante.setAtivo(true);
         comidaMineiraRestaurante.setCozinha(cozinhaBrasileira);
         restauranteRepository.save(comidaMineiraRestaurante);
     }

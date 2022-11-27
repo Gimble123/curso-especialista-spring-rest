@@ -1,122 +1,58 @@
 package com.algaworks.algafood.core.security.authorizationserver;
 
-import com.nimbusds.jose.JWSAlgorithm;
-import com.nimbusds.jose.jwk.JWKSet;
-import com.nimbusds.jose.jwk.KeyUse;
-import com.nimbusds.jose.jwk.RSAKey;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
-import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
-import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
-import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
-import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
-import org.springframework.security.oauth2.provider.CompositeTokenGranter;
-import org.springframework.security.oauth2.provider.TokenGranter;
-import org.springframework.security.oauth2.provider.approval.ApprovalStore;
-import org.springframework.security.oauth2.provider.approval.TokenApprovalStore;
-import org.springframework.security.oauth2.provider.token.TokenEnhancerChain;
-import org.springframework.security.oauth2.provider.token.TokenStore;
-import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
-import org.springframework.security.oauth2.provider.token.store.KeyStoreKeyFactory;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.core.AuthorizationGrantType;
+import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
+import org.springframework.security.oauth2.core.OAuth2TokenFormat;
+import org.springframework.security.oauth2.server.authorization.client.InMemoryRegisteredClientRepository;
+import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
+import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
+import org.springframework.security.oauth2.server.authorization.config.ProviderSettings;
+import org.springframework.security.oauth2.server.authorization.config.TokenSettings;
+import org.springframework.security.web.SecurityFilterChain;
 
-import javax.sql.DataSource;
-import java.security.KeyPair;
-import java.security.interfaces.RSAPublicKey;
-import java.util.Arrays;
+import java.time.Duration;
 import java.util.List;
 
 @Configuration
-@EnableAuthorizationServer
-public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdapter {
+public class AuthorizationServerConfig {
 
-    @Autowired
-    private AuthenticationManager authenticationManager;
-
-    @Autowired
-    private UserDetailsService userDetailsService;
-
-    @Autowired
-    private JwtKeyStoreProperties jwtKeyStoreProperties;
-
-    @Autowired
-    private DataSource dataSource;
-
-    @Override
-    public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
-        clients.jdbc(dataSource);
-    }
-
-    @Override
-    public void configure(AuthorizationServerSecurityConfigurer security) throws Exception {
-        security.checkTokenAccess("permitAll()")
-                .tokenKeyAccess("permitAll()")
-                .allowFormAuthenticationForClients();
-    }
-
-    @Override
-    public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
-        var enhancerChain = new TokenEnhancerChain();
-        enhancerChain.setTokenEnhancers(List.of(new JwtCustomClaimsTokenEnhancer(), jwtAccessTokenConverter()));
-
-        endpoints
-                .authenticationManager(authenticationManager)
-                .userDetailsService(userDetailsService)
-                .reuseRefreshTokens(false)
-                .accessTokenConverter(jwtAccessTokenConverter())
-                .tokenEnhancer(enhancerChain)
-                .approvalStore(approvalStore(endpoints.getTokenStore()))
-                .tokenGranter(tokenGranter(endpoints));
-    }
-
-    private ApprovalStore approvalStore(TokenStore tokenStore) {
-        var approvalStore = new TokenApprovalStore();
-        approvalStore.setTokenStore(tokenStore);
-
-        return approvalStore;
+    @Bean
+    @Order(Ordered.HIGHEST_PRECEDENCE)
+    public SecurityFilterChain authFilterChain(HttpSecurity http) throws Exception {
+        OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
+        return http.build();
     }
 
     @Bean
-    public JWKSet jwkSet() {
-        RSAKey.Builder builder = new RSAKey.Builder( (RSAPublicKey) keyPair().getPublic())
-                .keyUse(KeyUse.SIGNATURE)
-                .algorithm(JWSAlgorithm.RS256)
-                .keyID("algafood-key-id");
-
-        return new JWKSet(builder.build());
-
+    public ProviderSettings providerSettings(AlgaFoodSecurityProperties properties) {
+        return ProviderSettings.builder()
+                .issuer(properties.getProviderUrl())
+                .build();
     }
 
     @Bean
-    public JwtAccessTokenConverter jwtAccessTokenConverter() {
-        var jwtAccessTokenConverter = new JwtAccessTokenConverter();
+    public RegisteredClientRepository registeredClientRepository(PasswordEncoder passwordEncoder) {
+        RegisteredClient algafoodbackend = RegisteredClient
+                .withId("1")
+                .clientId("algafood-backend")
+                .clientSecret(passwordEncoder.encode("backend123"))
+                .clientAuthenticationMethod(ClientAuthenticationMethod.BASIC)
+                .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
+                .scope("READ")
+                .tokenSettings(TokenSettings.builder()
+                        .accessTokenFormat(OAuth2TokenFormat.REFERENCE)
+                        .accessTokenTimeToLive(Duration.ofMinutes(30))
+                        .build())
+                .build();
 
-        jwtAccessTokenConverter.setKeyPair(keyPair());
-
-        return jwtAccessTokenConverter;
+        return new InMemoryRegisteredClientRepository(List.of(algafoodbackend));
     }
 
-    private KeyPair keyPair() {
-        var keyStorePass = jwtKeyStoreProperties.getPassword();
-        var keyPairAlias = jwtKeyStoreProperties.getKeypairAlias();
-
-        var keyStoreKeyFactory = new KeyStoreKeyFactory(
-                jwtKeyStoreProperties.getJksLocation(), keyStorePass.toCharArray());
-
-        return keyStoreKeyFactory.getKeyPair(keyPairAlias);
-    }
-
-    private TokenGranter tokenGranter(AuthorizationServerEndpointsConfigurer endpoints) {
-        var pkceAuthorizationCodeTokenGranter = new PkceAuthorizationCodeTokenGranter(endpoints.getTokenServices(),
-                endpoints.getAuthorizationCodeServices(), endpoints.getClientDetailsService(),
-                endpoints.getOAuth2RequestFactory());
-
-        var granters = Arrays.asList(
-                pkceAuthorizationCodeTokenGranter, endpoints.getTokenGranter());
-
-        return new CompositeTokenGranter(granters);
-    }
 }
